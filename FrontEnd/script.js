@@ -30,9 +30,18 @@ async function getCategories () {
     buttonAll.textContent = "Tous";
     filters.appendChild(buttonAll);
     buttonAll.addEventListener("click", function () {
+    //Ajout et suppresion de la classe button-selected lros du clique sur le bouton "Tous"
+    const allSelected = document.querySelectorAll(".filters button");
+    for(let i = 0; i < allSelected.length; i++){
+        const currentAll = allSelected[i];
+        currentAll.classList.remove("button-selected");
+    }
+    buttonAll.classList.add("button-selected");
     document.querySelector(".gallery").innerHTML ="";
     displayProjects(projects);
     })
+    //Ajout de classList.add sur le bouotn "tous" pour que el bouton prenne la classe button-selected par défaut lors de l'ouverture de la page
+    buttonAll.classList.add("button-selected");
 
     for(let i = 0; i < categories.length; i++) {
         const category = categories[i];
@@ -43,6 +52,15 @@ async function getCategories () {
         filters.appendChild(button);
         //J'ajoute un EventListener pour "écouter" chaque click sur les boutons
         button.addEventListener("click", function () {
+            //je selectionne tout les boutons situé dans la classe .filters button
+            const allButtons = document.querySelectorAll(".filters button")
+            //je fais une boucle pour parcourir chaque bouton et leur enlever la class "button-selected"
+            for(let i = 0; i < allButtons.length; i++) {
+                const currentButton = allButtons[i];
+                currentButton.classList.remove("button-selected");
+            }
+            //Ajout de la classe css button-selected lorsque qu'un bouton de filtre est sélectionné.
+            button.classList.add("button-selected");
             //je re créer un tableau avec .filter a partir de mon tableau projects de base, avec uniquement les projets qui respecte la condition ci dessous
             const filteredProjects = projects.filter(function (project) {
                 //Je vérifie si la categoryId du projet appartient a la catégorie du bouton séléctionné
