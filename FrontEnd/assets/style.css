@@ -30,7 +30,15 @@ footer, header, hgroup, menu, nav, section {
 }
 body {
 	line-height: 1;
+	background-color: #FFFEF8;
 }
+
+main, header {
+	max-width: 1140px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 ol, ul {
 	list-style: none;
 }
@@ -48,15 +56,13 @@ table {
 }
 /** end reset css**/
 body {
-	max-width: 1140px;
-	margin:auto;
 	font-family: 'Work Sans' ;
 	font-size: 14px;
 }
 header {
 	display: flex;
 	justify-content: space-between;
-	margin: 50px 0
+	margin-top: 50px;
 }
 section {
 	margin: 50px 0
@@ -93,6 +99,10 @@ nav ul {
 nav li {
 	padding: 0 10px;
 	font-size: 1.2em;
+}
+
+nav a {
+	text-decoration: none;
 }
 
 li:hover {
@@ -209,4 +219,62 @@ footer nav ul {
 .filters button.button-selected {
 background-color: #1D6154;
 color: white;
+}
+
+footer {
+	background-color: #FFFFFF;
+	height: 60px;
+  	display: flex;
+  	justify-content: flex-end;
+}
+
+.login-header {
+	margin-bottom: 50px;
+}
+
+.login-page {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.login-page h2 {
+	text-align: center;
+}
+
+.login-form {
+	display: flex;
+	flex-direction: column;
+	width: 380px;
+	margin-top: 50px;
+}
+
+.login-form label {
+	margin: 2em 0 1em 0;
+}
+
+.login-form input {
+	height: 51px;
+	border: none;
+	box-shadow: 0px 4px 14px 0px rgba(0, 0, 0, 0.09);
+}
+
+.login-form button {
+	border: none;
+	background-color: #1D6154;
+	color: white;
+	border-radius: 60px;
+	width: 179px;
+	height: 36px;
+	margin-top: 40px;
+}
+
+.login-form a {
+	text-align: center;
+	margin-top: 20px;
+}
+
+.login-footer {
+	align-items: center;
+	padding-right: 50px;
 }
