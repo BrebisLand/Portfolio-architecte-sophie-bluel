@@ -94,15 +94,21 @@ nav ul {
 	display: flex;
 	align-items: center;
 	list-style-type: none;
+	gap: 60px;
 
 }
 nav li {
-	padding: 0 10px;
 	font-size: 1.2em;
 }
 
 nav a {
 	text-decoration: none;
+	color: #000000;
+}
+
+nav img {
+	width: 22px;
+	height: auto;
 }
 
 li:hover {
@@ -228,14 +234,29 @@ footer {
   	justify-content: flex-end;
 }
 
+.login-body {
+	display: flex;
+	flex-direction: column;
+	min-height: 1024px;
+}
+
 .login-header {
 	margin-bottom: 50px;
+	max-width: 1140px;
+	width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.login-header .active {
+	font-weight: bold;
 }
 
 .login-page {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	margin-top: 100px;
 }
 
 .login-page h2 {
@@ -246,7 +267,7 @@ footer {
 	display: flex;
 	flex-direction: column;
 	width: 380px;
-	margin-top: 50px;
+	margin-top: 15px;
 }
 
 .login-form label {
@@ -267,14 +288,23 @@ footer {
 	width: 179px;
 	height: 36px;
 	margin-top: 40px;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 .login-form a {
 	text-align: center;
 	margin-top: 20px;
+	color: #000000;
 }
 
 .login-footer {
 	align-items: center;
 	padding-right: 50px;
+	margin-top: auto;
+}
+
+.login-footer a {
+	text-decoration: none;
+	color: #000000;
 }
