@@ -308,3 +308,9 @@ footer {
 	text-decoration: none;
 	color: #000000;
 }
+
+.login-error {
+	color: red;
+	text-align: center;
+	padding-top: 30px;
+}
