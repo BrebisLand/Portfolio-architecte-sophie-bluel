@@ -18,6 +18,34 @@ async function getProjects() {
     projects = await reponse.json();
     //je fais appel a ma fonction displayProject pour afficher les projets de mon tableau contenu dans la variable projects
     displayProjects(projects);
+
+    //Faire en sorte que sur login.html, le lien contact amène bien a la section contact de index.html aprés avoir charger les images.
+    //Je selectionne toutes les images
+    const images = document.querySelectorAll(".gallery img");
+    //Je créer un tableau qui contient les éléments HTML <img> de toute ces images a partir de la NodeList renvoyer avec la constante images
+    const tableauImages = Array.from(images);
+    //utilisation de .map pour éxécuter .decode sur toute les images
+    //function(image) à chaque passage, (image) représente une image du tableau
+    const promesseImages = tableauImages.map(function (image){
+        //.decode demande au navigateur de préparé chaque image du tableau pour son affichage et renvoie une promesse pour chaque image
+        //return permet a .map() de récupéré ces promesses et de les placer dans le nouveau tableau
+        return image.decode()
+    })
+    //try essaie d'exécuter
+    try {
+        //J'attend que toute les promesse du tableau promesseImages soit réussis
+        await Promise.all(promesseImages)
+        console.log("Toutes les images sont prêtes.")
+    } //catch permet d'intercepter une erreur si jamais il y en a une (ici si une image ne charge pas) et de renvoyer un message.
+    catch (erreur) {
+        console.log("Au moins une image n'a pas pu être chargée")
+    }
+
+    if (window.location.hash === "#contact") {
+        const contactSection = document.querySelector("#contact")
+        //scollIntoView demande au navigateur de défilé jusqu'a cette section #contact
+        contactSection.scrollIntoView()
+    }
 }
 
 const filters = document.querySelector(".filters");
@@ -57,6 +85,7 @@ async function getCategories () {
             //je fais une boucle pour parcourir chaque bouton et leur enlever la class "button-selected"
             for(let i = 0; i < allButtons.length; i++) {
                 const currentButton = allButtons[i];
+                //On ajoute un .remove sinon tout les boutons resterai avec la classe "button-selected" aprés avoir cliqué dessus.
                 currentButton.classList.remove("button-selected");
             }
             //Ajout de la classe css button-selected lorsque qu'un bouton de filtre est sélectionné.
