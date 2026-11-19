@@ -35,7 +35,6 @@ async function getProjects() {
     try {
         //J'attend que toute les promesse du tableau promesseImages soit réussis
         await Promise.all(promesseImages)
-        console.log("Toutes les images sont prêtes.")
     } //catch permet d'intercepter une erreur si jamais il y en a une (ici si une image ne charge pas) et de renvoyer un message.
     catch (erreur) {
         console.log("Au moins une image n'a pas pu être chargée")
@@ -121,3 +120,36 @@ function displayProjects(projectList) {
         figure.appendChild(figcaption);
     }
 }
+
+//Récupération du token obtenue lors de la connexion d'un utilisateur valide
+const token = sessionStorage.getItem("token");
+const editBanner = document.querySelector(".edit-banner");
+const logLink = document.querySelector(".log-link");
+const displayFilters = document.querySelector(".filters");
+const loginModif = document.querySelector(".modif");
+//Si token n'est pas égal a null alors :
+if (token !== null) {
+    //alors afficher le bandeau Mode édition
+    editBanner.style.display = "flex";
+    //Et changer le texte du lien qui a la class logLink (login) par "logout"
+    logLink.textContent = "logout";
+    //Et cacher les filtres contenu dans la classe .filters
+    displayFilters.style.display = "none";
+    //Et afficher le lien "modifier"
+    loginModif.style.display = "flex";
+} else {
+    //sinon si l'utilisateur n'est pas connecté cacher le bandeau Mode édition
+    editBanner.style.display = "none";
+    //Et afficher login au lieu de logout
+    logLink.textContent = "login";
+    //et afficher les filtres
+    displayFilters.style.display = "flex";
+    //Et cacher le lien "modifier"
+    loginModif.style.display = "none";
+}
+//au clique sur logout, on supprime le token de la session pour déconnecter l'utilisateur
+logLink.addEventListener("click", function () {
+    if (token !== null) {
+        sessionStorage.removeItem("token");
+    }
+})
