@@ -18,6 +18,33 @@ async function getProjects() {
     projects = await reponse.json();
     //je fais appel a ma fonction displayProject pour afficher les projets de mon tableau contenu dans la variable projects
     displayProjects(projects);
+
+    //Faire en sorte que sur login.html, le lien contact amène bien a la section contact de index.html aprés avoir charger les images.
+    //Je selectionne toutes les images
+    const images = document.querySelectorAll(".gallery img");
+    //Je créer un tableau qui contient les éléments HTML <img> de toute ces images a partir de la NodeList renvoyer avec la constante images
+    const tableauImages = Array.from(images);
+    //utilisation de .map pour éxécuter .decode sur toute les images
+    //function(image) à chaque passage, (image) représente une image du tableau
+    const promesseImages = tableauImages.map(function (image){
+        //.decode demande au navigateur de préparé chaque image du tableau pour son affichage et renvoie une promesse pour chaque image
+        //return permet a .map() de récupéré ces promesses et de les placer dans le nouveau tableau
+        return image.decode()
+    })
+    //try essaie d'exécuter
+    try {
+        //J'attend que toute les promesse du tableau promesseImages soit réussis
+        await Promise.all(promesseImages)
+    } //catch permet d'intercepter une erreur si jamais il y en a une (ici si une image ne charge pas) et de renvoyer un message.
+    catch (erreur) {
+        console.log("Au moins une image n'a pas pu être chargée")
+    }
+
+    if (window.location.hash === "#contact") {
+        const contactSection = document.querySelector("#contact")
+        //scollIntoView demande au navigateur de défilé jusqu'a cette section #contact
+        contactSection.scrollIntoView()
+    }
 }
 
 const filters = document.querySelector(".filters");
@@ -57,6 +84,7 @@ async function getCategories () {
             //je fais une boucle pour parcourir chaque bouton et leur enlever la class "button-selected"
             for(let i = 0; i < allButtons.length; i++) {
                 const currentButton = allButtons[i];
+                //On ajoute un .remove sinon tout les boutons resterai avec la classe "button-selected" aprés avoir cliqué dessus.
                 currentButton.classList.remove("button-selected");
             }
             //Ajout de la classe css button-selected lorsque qu'un bouton de filtre est sélectionné.
@@ -92,3 +120,36 @@ function displayProjects(projectList) {
         figure.appendChild(figcaption);
     }
 }
+
+//Récupération du token obtenue lors de la connexion d'un utilisateur valide
+const token = sessionStorage.getItem("token");
+const editBanner = document.querySelector(".edit-banner");
+const logLink = document.querySelector(".log-link");
+const displayFilters = document.querySelector(".filters");
+const loginModif = document.querySelector(".modif");
+//Si token n'est pas égal a null alors :
+if (token !== null) {
+    //alors afficher le bandeau Mode édition
+    editBanner.style.display = "flex";
+    //Et changer le texte du lien qui a la class logLink (login) par "logout"
+    logLink.textContent = "logout";
+    //Et cacher les filtres contenu dans la classe .filters
+    displayFilters.style.display = "none";
+    //Et afficher le lien "modifier"
+    loginModif.style.display = "flex";
+} else {
+    //sinon si l'utilisateur n'est pas connecté cacher le bandeau Mode édition
+    editBanner.style.display = "none";
+    //Et afficher login au lieu de logout
+    logLink.textContent = "login";
+    //et afficher les filtres
+    displayFilters.style.display = "flex";
+    //Et cacher le lien "modifier"
+    loginModif.style.display = "none";
+}
+//au clique sur logout, on supprime le token de la session pour déconnecter l'utilisateur
+logLink.addEventListener("click", function () {
+    if (token !== null) {
+        sessionStorage.removeItem("token");
+    }
+})
