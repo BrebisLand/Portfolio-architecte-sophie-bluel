@@ -1,6 +1,53 @@
 const gallery = document.querySelector(".gallery");
+const modalGallery = document.querySelector(".modal-gallery");
+const modaleLink = document.querySelector(".modale");
+const modaleOverlay = document.querySelector(".modal-overlay");
+const modaleClose = document.querySelector(".modal-close");
 //je créer une variable projects pour pouvoir l'utiliser dans mes fonctions
 let projects;
+
+//Je créer l'écoute du click sur le bouton modifier pour ouvrir la modale
+modaleLink.addEventListener("click", function (event) {
+    event.preventDefault();
+    modaleOverlay.style.display = "flex";
+})
+
+//Je créer l'écoute du click sur l'overlay (en dehors de la modale) pour fermer la modale
+modaleOverlay.addEventListener("click", function (event) {
+    if (event.target === modaleOverlay ) {
+        modaleOverlay.style.display = "none";
+    }
+})
+
+//Je créer l'écoute du clique sur la croix de la modale pour fermer la modale
+modaleClose.addEventListener("click", function (event) {
+    event.preventDefault();
+    modaleOverlay.style.display = "none";
+})
+
+//Je créer la fonction pour la gallery de la modal
+function displayModalProjects(projects) {
+    modalGallery.innerHTML = "";
+    //J'utilise forEach pour récupéré chaque élément du tableau projects
+    projects.forEach(function (project) {
+        const modalFigure = document.createElement("figure");
+        const img = document.createElement("img");
+        img.src = project.imageUrl;
+        img.alt = project.title;
+        modalGallery.appendChild(modalFigure);
+        modalFigure.appendChild(img);
+
+        const deleteButton = document.createElement("button");
+        deleteButton.classList.add("modal-delete-btn");
+        deleteButton.setAttribute("aria-label", "supprimer le projet");
+        deleteButton.setAttribute("type", "button");
+
+        const trashIcone = document.createElement("i");
+        trashIcone.classList.add("fa-solid", "fa-trash-can");
+        modalFigure.appendChild(deleteButton);
+        deleteButton.appendChild(trashIcone);
+    })
+}
 
 //Je créer la fonction init pour éviter que les boutons de filtres soit créer avant que le tableau projects soit disponible
 async function init() {
@@ -18,6 +65,7 @@ async function getProjects() {
     projects = await reponse.json();
     //je fais appel a ma fonction displayProject pour afficher les projets de mon tableau contenu dans la variable projects
     displayProjects(projects);
+    displayModalProjects(projects);
 
     //Faire en sorte que sur login.html, le lien contact amène bien a la section contact de index.html aprés avoir charger les images.
     //Je selectionne toutes les images
@@ -126,8 +174,8 @@ const token = sessionStorage.getItem("token");
 const editBanner = document.querySelector(".edit-banner");
 const logLink = document.querySelector(".log-link");
 const displayFilters = document.querySelector(".filters");
-const loginModif = document.querySelector(".modif");
-//Si token n'est pas égal a null alors :
+const loginModif = document.querySelector(".modale");
+//Si token n'est pas égal a null (donc si on a bien un token qui montre qu'on est connécté) alors :
 if (token !== null) {
     //alors afficher le bandeau Mode édition
     editBanner.style.display = "flex";
