@@ -374,7 +374,7 @@ footer {
 }
 
 .modal-content h2 {
-	font-family: Work Sans;
+	font-family: "Work Sans";
 	font-size: 26px;
 	text-align: center;
 	color: black;
@@ -458,4 +458,143 @@ footer {
 .modal-gallery i {
 	color: white;
 	font-size: 10px;
+}
+
+.modal-add-view {
+	display: none;
+}
+
+.modal-back {
+	position: relative;
+	top: 25px;
+	left: 25px;
+	width: 21px;
+	height: auto;
+	background-color: transparent;
+	border: none;
+	cursor: pointer;
+	font-size: 21px;
+}
+
+.modal-add-form {
+	display: flex;
+	flex-direction: column;
+}
+
+.modal-upload {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	background-color: #E8F1F6;
+	width: 420px;
+	height: 169px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 50px;
+	border-radius: 3px;
+}
+
+.modal-upload i {
+	font-size: 68px;
+	color: #B9C5CC;
+}
+/*on cache l'élément input mais seulement visuellement*/
+.modal-upload input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	/*cache ce qui dépasse de la boite ici notre boite fait 1px de large et 1px de haut*/
+	overflow: hidden;
+	padding: 0;
+	border: 0;
+	margin: 0;
+	/*découpe visuellement l'élément en retirant x% de chaque coté*/
+	clip-path: inset(50%);
+}
+
+.modal-upload label {
+	background-color: #CBD6DC;
+	/*inline-block permet a l'élément de rester en ligne tout en acceptant une largeur et une hauteur*/
+	display: inline-block;
+	width: 173px;
+	height: 36px;
+	border-radius: 50px;
+	text-align: center;
+	align-content: center;
+	cursor: pointer;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.modal-form-input {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: flex-start;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 30px;
+	width: 420px;
+	gap: 10px;
+	
+}
+
+.modal-form-input input,
+.modal-form-input select {
+	width: 100%;
+	height: 51px;
+	box-sizing: border-box;
+	border: none;
+	box-shadow: 0px 4px 14px 0px rgba(0, 0, 0, 0.09);
+	padding-left: 15px;
+	font-size: 14px;
+	color: #444444;
+	font-family: "Work Sans", sans-serif; 
+}
+
+.modal-form-input label {
+	margin-bottom: 5px;
+	color: #3D3D3D;
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.modal-form-input #titre {
+	margin-bottom: 10px;
+}
+
+.modal-form-input #categorie {
+	background-color: white;
+}
+
+.modal-add-separator {
+	width: 420px;
+	height: 1px;
+	background-color: #B3B3B3;
+	margin-left: auto;
+	margin-right: auto;
+	border: none;
+	/*position verticale (a trouver sur figma dans "haut") de la bordure de séparation moins*/
+	/*(la position verticale du champ de catégorie + la hauteur du champ de catégorie)*/
+	/*ce qui nous fait : 1207 - (1109 + 51) = 47*/
+	margin-top: 47px;
+}
+
+.modal-add-btn {
+	background-color: #1D6154;
+	color: white;
+	width: 237px;
+	height: 36px;
+	border-radius: 60px;
+	margin-bottom: 55px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 31px;
+	cursor: pointer;
+}
+
+/*css lorsque le bouton Valider de la modale est désactivé*/
+.modal-add-btn:disabled {
+	background-color: #A7A7A7;
 }

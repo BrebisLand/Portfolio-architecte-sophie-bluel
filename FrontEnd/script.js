@@ -3,13 +3,103 @@ const modalGallery = document.querySelector(".modal-gallery");
 const modaleLink = document.querySelector(".modale");
 const modaleOverlay = document.querySelector(".modal-overlay");
 const modaleClose = document.querySelector(".modal-close");
+const modalGalleryView = document.querySelector(".modal-gallery-view");
+const modalAddView = document.querySelector(".modal-add-view");
+const modalAddPhotoBtn = document.querySelector(".modal-add-photo");
+const modalBack = document.querySelector(".modal-back");
+const modalCategorySelect = document.querySelector("#categorie");
+const modalAddBtn = document.querySelector(".modal-add-btn");
+const modalTitleInput = document.querySelector("#titre");
+const modalPhotoInput = document.querySelector("#photo");
 //je créer une variable projects pour pouvoir l'utiliser dans mes fonctions
 let projects;
+
+//Je créer une fonction pour m'assurer que le formulaire de la modale est bien remplis pour passer le bouton Valider fonctionnel.
+function checkModalForm () {
+    //Je récupére la valeur du champ de Titre
+    //Vu qu'il s'agit d'une chaine de caracteres, .trim() sert a supprimé les espaces du début et de fin. Ca évite qu'un utilisateur rentre seulement des espaces.
+    const titleFilled = modalTitleInput.value.trim() !== "";
+    const categoryFilled = modalCategorySelect.value !== "";
+    //Je vérifie le format de la photo avec .files
+    const selectedPhoto = modalPhotoInput.files[0];
+    //on démarre avec ValidPhoto qui vaut false, puis si la condition If est correct, ValidPhoto passe en true
+    let validPhoto = false;
+    if (selectedPhoto) {
+        //Si la photo est au format png
+        const isPng = selectedPhoto.type === "image/png";
+        //Si la photo est au format jpeg
+        const isJpeg = selectedPhoto.type === "image/jpeg";
+        //Si l'image est au format png OU jpeg alors c'est true
+        const validFormat = isPng || isJpeg;
+        //Ensuite on vérifie la taille de l'image
+        //On commence par récupéré la taille de l'image avec .size
+        const photoSize = selectedPhoto.size;
+        //On indique ensuite la taille maximum accepté pour une image
+        //Ici on veut 4mo maximum, on fait donc le calcul 4 x 1024 x 1024 = 4 194 304 octets
+        const maxPhotoSize = 4 * 1024 * 1024;
+        //On vérifie si la taille est bien inférieur ou égal a celle maximum autorisée
+        const validSize = photoSize <= maxPhotoSize;
+        //Enfin on vérifie que la taille et le format de l'image sont correct
+        validPhoto = validFormat && validSize;
+    }
+    //On vérifie si les 3 conditions sont valide avec &&
+    const formFilled = titleFilled && categoryFilled && validPhoto;
+    modalAddBtn.disabled = !formFilled;
+}
+
+//J'ajoute des écouteurs sur tout les éléments du form : titre, catégorie, photo
+//a chaque fois qu'un champ est remplit on execute checkModalForm pour voir si tout les champs sont remplis pour activer le bouton
+modalTitleInput.addEventListener("input", function () {
+    checkModalForm()
+})
+
+modalCategorySelect.addEventListener("change", function () {
+    checkModalForm()
+})
+
+modalPhotoInput.addEventListener("change", function () {
+    checkModalForm()
+})
+
+//Je créer une fonction pour appeller mes catégories depuis l'api pour les mettre dans mon menu déroulant de la modale
+function displayModalCategories(categories) {
+    modalCategorySelect.innerHTML = "";
+    //Sert a avoir une option initial qui est vide dans la champ catégorie
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    //Permet de cacher l'option vide dans la liste déroulante des options
+    emptyOption.disabled = true;
+    emptyOption.hidden = true;
+    //Permet a l'option vide d'être séléctionné comme l'option initial
+    emptyOption.selected = true;
+    modalCategorySelect.appendChild(emptyOption);
+
+    categories.forEach(function (categorie) {
+        const categoryOption = document.createElement("option");
+        categoryOption.textContent = categorie.name;
+        categoryOption.value = categorie.id;
+        modalCategorySelect.appendChild(categoryOption);
+    })
+}
+
+//Je créer l'écoute sur la fleche de retour dans la modal pour revenir a la premiere page
+modalBack.addEventListener("click", function () {
+    modalGalleryView.style.display = "block";
+    modalAddView.style.display = "none";
+})
+
+//Je créer l'écoute du click sur le bouton ajouter une photo
+modalAddPhotoBtn.addEventListener("click", function () {
+    modalGalleryView.style.display = "none";
+    modalAddView.style.display = "block";
+})
 
 //Je créer l'écoute du click sur le bouton modifier pour ouvrir la modale
 modaleLink.addEventListener("click", function (event) {
     event.preventDefault();
     modaleOverlay.style.display = "flex";
+    modalGalleryView.style.display = "block";
+    modalAddView.style.display = "none";
 })
 
 //Je créer l'écoute du click sur l'overlay (en dehors de la modale) pour fermer la modale
@@ -99,6 +189,9 @@ const filters = document.querySelector(".filters");
 async function getCategories () {
     const reponse = await fetch("http://localhost:5678/api/categories");
     const categories = await reponse.json();
+
+    //j'appelle la fonction des catégories de la modale et je lui transmet le tableau des catégories.
+    displayModalCategories(categories);
 
     //création du bouton "Tous"
     const buttonAll = document.createElement("button");
