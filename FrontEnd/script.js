@@ -11,8 +11,57 @@ const modalCategorySelect = document.querySelector("#categorie");
 const modalAddBtn = document.querySelector(".modal-add-btn");
 const modalTitleInput = document.querySelector("#titre");
 const modalPhotoInput = document.querySelector("#photo");
+const modalAddForm = document.querySelector(".modal-add-form");
+const modalPhotoPreview = document.querySelector(".modal-photo-preview");
+let currentPhotoUrl = null;
+const modalUpload = document.querySelector(".modal-upload");
 //je créer une variable projects pour pouvoir l'utiliser dans mes fonctions
 let projects;
+
+//Je créer une fonction pour afficher l'aperçu de la photo séléctionné lors d'un ajout de projet dans la modale.
+function displayPhotoPreview () {
+    //Je créer une constante pour récupéré le fichier choisit par l'utilisateur
+    const selectedPhoto = modalPhotoInput.files[0];
+    //Si selectedPhoto est différent de undefined alors éxécuté ses instructions.
+    if (selectedPhoto !== undefined) {
+        //Si selectedPhoto est !== de undefined alors je refait une condition if pour voir si currentPhotoUrl !== null
+        //Pour libérer l'ancienne URL avant d'en créer une nouvelle.
+        if (currentPhotoUrl !== null) {
+            //pour libéré l'URL deja existante j'utilise URL.revokeObjectURL avec comme paramètre ici currentPhotoUrl
+            URL.revokeObjectURL(currentPhotoUrl);
+        }
+        //Je demande au navigateur de créer une URL locale temporaire qui permet d'accéder au fichier selectionné.
+        //Pour faire ça j'utilise URL.createObjectURL() avec comme parametre selectedPhoto
+        const photoUrl = URL.createObjectURL(selectedPhoto);
+        //j'associe la src de la balise img a l'URL créer juste en dessus.
+        modalPhotoPreview.src = photoUrl;
+        //Je modifie le CSS pour passer le display en block
+        modalPhotoPreview.style.display = "block";
+        //j'ajoute la class afterPreview a la suite de la class modal-upload, pour la masqué quand il y a l'aperçu de l'image
+        modalUpload.classList.add("afterPreview");
+        currentPhotoUrl = photoUrl;
+    }
+}
+
+//Je créer une fonction pour vidé le formulaire de la modale une fois celui ci validé
+function resetModalForm () {
+    //On utilise .reset() pour rétablir les valeurs initial d'un formulaire en HTML
+    modalAddForm.reset();
+    //Et on remet disabled sur le bouton pour le désactivé
+    modalAddBtn.disabled = true;
+    //Et on cache la photo en remettant none sur display sur la class css de la preview
+    modalPhotoPreview.style.display = "none";
+    //Et je retire l'url de la src de l'image pour l'enlever et pas seulement la "cacher"
+    modalPhotoPreview.removeAttribute("src");
+    //J'enleve la class afterPreview lors du "reset" pour re afficher les éléments i p et label
+    modalUpload.classList.remove("afterPreview");
+    //J'ajoute une condition if si currentPhotoUrl est !== de null
+    if (currentPhotoUrl !== null) {
+        URL.revokeObjectURL(currentPhotoUrl);
+        //Je remet l'url de la photo égal a null
+        currentPhotoUrl = null;
+    }
+}
 
 //Je créer une fonction pour m'assurer que le formulaire de la modale est bien remplis pour passer le bouton Valider fonctionnel.
 function checkModalForm () {
@@ -59,6 +108,7 @@ modalCategorySelect.addEventListener("change", function () {
 
 modalPhotoInput.addEventListener("change", function () {
     checkModalForm()
+    displayPhotoPreview()
 })
 
 //Je créer une fonction pour appeller mes catégories depuis l'api pour les mettre dans mon menu déroulant de la modale
@@ -70,8 +120,10 @@ function displayModalCategories(categories) {
     //Permet de cacher l'option vide dans la liste déroulante des options
     emptyOption.disabled = true;
     emptyOption.hidden = true;
-    //Permet a l'option vide d'être séléctionné comme l'option initial
+    //Permet a l'option vide d'être séléctionné immédiatement au chargement de la page
     emptyOption.selected = true;
+    //Permet a l'option vide d'être séléctionné par defaut lors d'un reset du formulaire aprés validation.
+    emptyOption.defaultSelected = true;
     modalCategorySelect.appendChild(emptyOption);
 
     categories.forEach(function (categorie) {
@@ -106,6 +158,7 @@ modaleLink.addEventListener("click", function (event) {
 modaleOverlay.addEventListener("click", function (event) {
     if (event.target === modaleOverlay ) {
         modaleOverlay.style.display = "none";
+        resetModalForm();
     }
 })
 
@@ -113,6 +166,7 @@ modaleOverlay.addEventListener("click", function (event) {
 modaleClose.addEventListener("click", function (event) {
     event.preventDefault();
     modaleOverlay.style.display = "none";
+    resetModalForm();
 })
 
 //Je créer la fonction pour la gallery de la modal
