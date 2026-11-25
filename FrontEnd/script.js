@@ -3,19 +3,162 @@ const modalGallery = document.querySelector(".modal-gallery");
 const modaleLink = document.querySelector(".modale");
 const modaleOverlay = document.querySelector(".modal-overlay");
 const modaleClose = document.querySelector(".modal-close");
+const modalGalleryView = document.querySelector(".modal-gallery-view");
+const modalAddView = document.querySelector(".modal-add-view");
+const modalAddPhotoBtn = document.querySelector(".modal-add-photo");
+const modalBack = document.querySelector(".modal-back");
+const modalCategorySelect = document.querySelector("#categorie");
+const modalAddBtn = document.querySelector(".modal-add-btn");
+const modalTitleInput = document.querySelector("#titre");
+const modalPhotoInput = document.querySelector("#photo");
+const modalAddForm = document.querySelector(".modal-add-form");
+const modalPhotoPreview = document.querySelector(".modal-photo-preview");
+let currentPhotoUrl = null;
+const modalUpload = document.querySelector(".modal-upload");
 //je créer une variable projects pour pouvoir l'utiliser dans mes fonctions
 let projects;
+
+//Je créer une fonction pour afficher l'aperçu de la photo séléctionné lors d'un ajout de projet dans la modale.
+function displayPhotoPreview () {
+    //Je créer une constante pour récupéré le fichier choisit par l'utilisateur
+    const selectedPhoto = modalPhotoInput.files[0];
+    //Si selectedPhoto est différent de undefined alors éxécuté ses instructions.
+    if (selectedPhoto !== undefined) {
+        //Si selectedPhoto est !== de undefined alors je refait une condition if pour voir si currentPhotoUrl !== null
+        //Pour libérer l'ancienne URL avant d'en créer une nouvelle.
+        if (currentPhotoUrl !== null) {
+            //pour libéré l'URL deja existante j'utilise URL.revokeObjectURL avec comme paramètre ici currentPhotoUrl
+            URL.revokeObjectURL(currentPhotoUrl);
+        }
+        //Je demande au navigateur de créer une URL locale temporaire qui permet d'accéder au fichier selectionné.
+        //Pour faire ça j'utilise URL.createObjectURL() avec comme parametre selectedPhoto
+        const photoUrl = URL.createObjectURL(selectedPhoto);
+        //j'associe la src de la balise img a l'URL créer juste en dessus.
+        modalPhotoPreview.src = photoUrl;
+        //Je modifie le CSS pour passer le display en block
+        modalPhotoPreview.style.display = "block";
+        //j'ajoute la class afterPreview a la suite de la class modal-upload, pour la masqué quand il y a l'aperçu de l'image
+        modalUpload.classList.add("afterPreview");
+        currentPhotoUrl = photoUrl;
+    }
+}
+
+//Je créer une fonction pour vidé le formulaire de la modale une fois celui ci validé
+function resetModalForm () {
+    //On utilise .reset() pour rétablir les valeurs initial d'un formulaire en HTML
+    modalAddForm.reset();
+    //Et on remet disabled sur le bouton pour le désactivé
+    modalAddBtn.disabled = true;
+    //Et on cache la photo en remettant none sur display sur la class css de la preview
+    modalPhotoPreview.style.display = "none";
+    //Et je retire l'url de la src de l'image pour l'enlever et pas seulement la "cacher"
+    modalPhotoPreview.removeAttribute("src");
+    //J'enleve la class afterPreview lors du "reset" pour re afficher les éléments i p et label
+    modalUpload.classList.remove("afterPreview");
+    //J'ajoute une condition if si currentPhotoUrl est !== de null
+    if (currentPhotoUrl !== null) {
+        URL.revokeObjectURL(currentPhotoUrl);
+        //Je remet l'url de la photo égal a null
+        currentPhotoUrl = null;
+    }
+}
+
+//Je créer une fonction pour m'assurer que le formulaire de la modale est bien remplis pour passer le bouton Valider fonctionnel.
+function checkModalForm () {
+    //Je récupére la valeur du champ de Titre
+    //Vu qu'il s'agit d'une chaine de caracteres, .trim() sert a supprimé les espaces du début et de fin. Ca évite qu'un utilisateur rentre seulement des espaces.
+    const titleFilled = modalTitleInput.value.trim() !== "";
+    const categoryFilled = modalCategorySelect.value !== "";
+    //Je vérifie le format de la photo avec .files
+    const selectedPhoto = modalPhotoInput.files[0];
+    //on démarre avec ValidPhoto qui vaut false, puis si la condition If est correct, ValidPhoto passe en true
+    let validPhoto = false;
+    if (selectedPhoto) {
+        //Si la photo est au format png
+        const isPng = selectedPhoto.type === "image/png";
+        //Si la photo est au format jpeg
+        const isJpeg = selectedPhoto.type === "image/jpeg";
+        //Si l'image est au format png OU jpeg alors c'est true
+        const validFormat = isPng || isJpeg;
+        //Ensuite on vérifie la taille de l'image
+        //On commence par récupéré la taille de l'image avec .size
+        const photoSize = selectedPhoto.size;
+        //On indique ensuite la taille maximum accepté pour une image
+        //Ici on veut 4mo maximum, on fait donc le calcul 4 x 1024 x 1024 = 4 194 304 octets
+        const maxPhotoSize = 4 * 1024 * 1024;
+        //On vérifie si la taille est bien inférieur ou égal a celle maximum autorisée
+        const validSize = photoSize <= maxPhotoSize;
+        //Enfin on vérifie que la taille et le format de l'image sont correct
+        validPhoto = validFormat && validSize;
+    }
+    //On vérifie si les 3 conditions sont valide avec &&
+    const formFilled = titleFilled && categoryFilled && validPhoto;
+    modalAddBtn.disabled = !formFilled;
+}
+
+//J'ajoute des écouteurs sur tout les éléments du form : titre, catégorie, photo
+//a chaque fois qu'un champ est remplit on execute checkModalForm pour voir si tout les champs sont remplis pour activer le bouton
+modalTitleInput.addEventListener("input", function () {
+    checkModalForm()
+})
+
+modalCategorySelect.addEventListener("change", function () {
+    checkModalForm()
+})
+
+modalPhotoInput.addEventListener("change", function () {
+    checkModalForm()
+    displayPhotoPreview()
+})
+
+//Je créer une fonction pour appeller mes catégories depuis l'api pour les mettre dans mon menu déroulant de la modale
+function displayModalCategories(categories) {
+    modalCategorySelect.innerHTML = "";
+    //Sert a avoir une option initial qui est vide dans la champ catégorie
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    //Permet de cacher l'option vide dans la liste déroulante des options
+    emptyOption.disabled = true;
+    emptyOption.hidden = true;
+    //Permet a l'option vide d'être séléctionné immédiatement au chargement de la page
+    emptyOption.selected = true;
+    //Permet a l'option vide d'être séléctionné par defaut lors d'un reset du formulaire aprés validation.
+    emptyOption.defaultSelected = true;
+    modalCategorySelect.appendChild(emptyOption);
+
+    categories.forEach(function (categorie) {
+        const categoryOption = document.createElement("option");
+        categoryOption.textContent = categorie.name;
+        categoryOption.value = categorie.id;
+        modalCategorySelect.appendChild(categoryOption);
+    })
+}
+
+//Je créer l'écoute sur la fleche de retour dans la modal pour revenir a la premiere page
+modalBack.addEventListener("click", function () {
+    modalGalleryView.style.display = "block";
+    modalAddView.style.display = "none";
+})
+
+//Je créer l'écoute du click sur le bouton ajouter une photo
+modalAddPhotoBtn.addEventListener("click", function () {
+    modalGalleryView.style.display = "none";
+    modalAddView.style.display = "block";
+})
 
 //Je créer l'écoute du click sur le bouton modifier pour ouvrir la modale
 modaleLink.addEventListener("click", function (event) {
     event.preventDefault();
     modaleOverlay.style.display = "flex";
+    modalGalleryView.style.display = "block";
+    modalAddView.style.display = "none";
 })
 
 //Je créer l'écoute du click sur l'overlay (en dehors de la modale) pour fermer la modale
 modaleOverlay.addEventListener("click", function (event) {
     if (event.target === modaleOverlay ) {
         modaleOverlay.style.display = "none";
+        resetModalForm();
     }
 })
 
@@ -23,6 +166,7 @@ modaleOverlay.addEventListener("click", function (event) {
 modaleClose.addEventListener("click", function (event) {
     event.preventDefault();
     modaleOverlay.style.display = "none";
+    resetModalForm();
 })
 
 //Je créer la fonction pour la gallery de la modal
@@ -37,11 +181,19 @@ function displayModalProjects(projects) {
         modalGallery.appendChild(modalFigure);
         modalFigure.appendChild(img);
 
+        //Je créer un bouton de suppression pour chaque projet
         const deleteButton = document.createElement("button");
         deleteButton.classList.add("modal-delete-btn");
         deleteButton.setAttribute("aria-label", "supprimer le projet");
         deleteButton.setAttribute("type", "button");
+        //Je créer un écouteur sur le bouton de suppression.
+        deleteButton.addEventListener("click", function () {
+            //au click appelle deleteWork() en lui transmettant l'id du projet a supprimer dans l'API
+            //Et l'élément HTML modalFigure a supprimer du DOM
+            deleteWork(project.id, modalFigure)
+        })
 
+        //Je met l'icone de la corbeille sur le bouton de suppression de chaque projet
         const trashIcone = document.createElement("i");
         trashIcone.classList.add("fa-solid", "fa-trash-can");
         modalFigure.appendChild(deleteButton);
@@ -99,6 +251,9 @@ const filters = document.querySelector(".filters");
 async function getCategories () {
     const reponse = await fetch("http://localhost:5678/api/categories");
     const categories = await reponse.json();
+
+    //j'appelle la fonction des catégories de la modale et je lui transmet le tableau des catégories.
+    displayModalCategories(categories);
 
     //création du bouton "Tous"
     const buttonAll = document.createElement("button");
@@ -201,3 +356,40 @@ logLink.addEventListener("click", function () {
         sessionStorage.removeItem("token");
     }
 })
+
+//Gérer la suppression des projets dans la modale :
+//Je récupère le token de la session dans une variable let au cas où un autre utilisateur se connecte on peut affecter un autre token a cette variable.
+let authToken = sessionStorage.getItem("token");
+//Je créer une constante pour préparé la valeur de l'en-tête HTTP Authorization
+//Cela permet de vérifié que l'utilisateur est autorisé a supprimé un projet
+//Bearer indique le type d'authentification trouvable sur Swagger en cliquant sur "Authorize".
+const authorizationValue = `Bearer ${authToken}`;
+//On prépare le headers pour les options de l'objet a transmettre a fetch()
+const deleteHeaders = {
+    Authorization: authorizationValue,
+}
+
+const deleteOptions = {
+    method: "DELETE",
+    headers: deleteHeaders,
+}
+
+//fonction qui prépare le chemin de l'API du projet à supprimer en utilisant son identifiant {id}
+async function deleteWork(id, modalFigure) {
+    const workUrl = `http://localhost:5678/api/works/${id}`;
+    //Je fait appel a fetch avec comme paramétre, la constante de l'adresse API et en option la constante de deleteOptions.
+    const response = await fetch(workUrl, deleteOptions);
+    //.ok signifie si response vaut true alors executer le if, si response vaut false ne pas executer.
+    if (response.ok) {
+        //si response vaut true alors on utilise.remove sur modalFigure pour retirer le projet de la gallery de la modal.
+        modalFigure.remove();
+        //Je réaffecte projects au nouveau tableau aprés avoir supprimé un projet
+        projects = projects.filter(function (project) {
+            return project.id !== id;
+        })
+        //On nettoie la gallery sur la page principal avant de la recharger avec le nouveau tableau et les projets qui ont était supprimé.
+        gallery.innerHTML = "";
+        //On rappelle la fonction displayProjects avec comme paramétre projects actualisé avec les projet en moins
+        displayProjects(projects);
+    }
+}
