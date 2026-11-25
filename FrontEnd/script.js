@@ -181,11 +181,19 @@ function displayModalProjects(projects) {
         modalGallery.appendChild(modalFigure);
         modalFigure.appendChild(img);
 
+        //Je créer un bouton de suppression pour chaque projet
         const deleteButton = document.createElement("button");
         deleteButton.classList.add("modal-delete-btn");
         deleteButton.setAttribute("aria-label", "supprimer le projet");
         deleteButton.setAttribute("type", "button");
+        //Je créer un écouteur sur le bouton de suppression.
+        deleteButton.addEventListener("click", function () {
+            //au click appelle deleteWork() en lui transmettant l'id du projet a supprimer dans l'API
+            //Et l'élément HTML modalFigure a supprimer du DOM
+            deleteWork(project.id, modalFigure)
+        })
 
+        //Je met l'icone de la corbeille sur le bouton de suppression de chaque projet
         const trashIcone = document.createElement("i");
         trashIcone.classList.add("fa-solid", "fa-trash-can");
         modalFigure.appendChild(deleteButton);
@@ -348,3 +356,40 @@ logLink.addEventListener("click", function () {
         sessionStorage.removeItem("token");
     }
 })
+
+//Gérer la suppression des projets dans la modale :
+//Je récupère le token de la session dans une variable let au cas où un autre utilisateur se connecte on peut affecter un autre token a cette variable.
+let authToken = sessionStorage.getItem("token");
+//Je créer une constante pour préparé la valeur de l'en-tête HTTP Authorization
+//Cela permet de vérifié que l'utilisateur est autorisé a supprimé un projet
+//Bearer indique le type d'authentification trouvable sur Swagger en cliquant sur "Authorize".
+const authorizationValue = `Bearer ${authToken}`;
+//On prépare le headers pour les options de l'objet a transmettre a fetch()
+const deleteHeaders = {
+    Authorization: authorizationValue,
+}
+
+const deleteOptions = {
+    method: "DELETE",
+    headers: deleteHeaders,
+}
+
+//fonction qui prépare le chemin de l'API du projet à supprimer en utilisant son identifiant {id}
+async function deleteWork(id, modalFigure) {
+    const workUrl = `http://localhost:5678/api/works/${id}`;
+    //Je fait appel a fetch avec comme paramétre, la constante de l'adresse API et en option la constante de deleteOptions.
+    const response = await fetch(workUrl, deleteOptions);
+    //.ok signifie si response vaut true alors executer le if, si response vaut false ne pas executer.
+    if (response.ok) {
+        //si response vaut true alors on utilise.remove sur modalFigure pour retirer le projet de la gallery de la modal.
+        modalFigure.remove();
+        //Je réaffecte projects au nouveau tableau aprés avoir supprimé un projet
+        projects = projects.filter(function (project) {
+            return project.id !== id;
+        })
+        //On nettoie la gallery sur la page principal avant de la recharger avec le nouveau tableau et les projets qui ont était supprimé.
+        gallery.innerHTML = "";
+        //On rappelle la fonction displayProjects avec comme paramétre projects actualisé avec les projet en moins
+        displayProjects(projects);
+    }
+}
