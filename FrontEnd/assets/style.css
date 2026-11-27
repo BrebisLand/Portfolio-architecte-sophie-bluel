@@ -479,6 +479,7 @@ footer {
 .modal-add-form {
 	display: flex;
 	flex-direction: column;
+	position: relative;
 }
 
 .modal-upload {
@@ -611,4 +612,13 @@ footer {
 .modal-upload.afterPreview p,
 .modal-upload.afterPreview label {
 	display: none;
+}
+
+.modal-error-message {
+	display: none;
+	text-align: center;
+	color: red;
+	position: absolute;
+	width: 100%;
+	bottom: 100px;
 }

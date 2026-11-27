@@ -18,12 +18,27 @@ const modalUpload = document.querySelector(".modal-upload");
 //je créer une variable projects pour pouvoir l'utiliser dans mes fonctions
 let projects;
 
+const modalErrorMessage = document.querySelector(".modal-error-message");
+//Je créer une fonction dédié pour le message d'erreur car il peut y avoir plusieurs message d'erreur possible
+//Par exemple : si l'image dépasse 4mo, si il n'y a pas de titre, pas de catégorie etc..
+function displayModalError (message) {
+    modalErrorMessage.textContent = message;
+    modalErrorMessage.style.display = "block";
+}
+
+//Je créer une autre fonction pour cacher le message d'erreur lorsque l'utilisateur l'a corrigé
+function hideMessageError () {
+    modalErrorMessage.style.display = "none";
+    modalErrorMessage.textContent = "";
+}
+
 //Je créer une fonction pour afficher l'aperçu de la photo séléctionné lors d'un ajout de projet dans la modale.
 function displayPhotoPreview () {
     //Je créer une constante pour récupéré le fichier choisit par l'utilisateur
     const selectedPhoto = modalPhotoInput.files[0];
+    const photoValidity = checkPhotoValidity(selectedPhoto)
     //Si selectedPhoto est différent de undefined alors éxécuté ses instructions.
-    if (selectedPhoto !== undefined) {
+    if (photoValidity.validPhoto) {
         //Si selectedPhoto est !== de undefined alors je refait une condition if pour voir si currentPhotoUrl !== null
         //Pour libérer l'ancienne URL avant d'en créer une nouvelle.
         if (currentPhotoUrl !== null) {
@@ -61,6 +76,38 @@ function resetModalForm () {
         //Je remet l'url de la photo égal a null
         currentPhotoUrl = null;
     }
+    hideMessageError();
+}
+
+//Je créer une fonction capable de vérifier la validité d'une photo
+function checkPhotoValidity (selectedPhoto) {
+    //on démarre avec ValidPhoto qui vaut false, puis si la condition If est correct, on vérifie son format puis sa taille.
+    let validPhoto = false;
+    let validFormat = false;
+    let validSize = false;
+    if (selectedPhoto) {
+        //Si la photo est au format png
+        const isPng = selectedPhoto.type === "image/png";
+        //Si la photo est au format jpeg
+        const isJpeg = selectedPhoto.type === "image/jpeg";
+        //Si l'image est au format png OU jpeg alors c'est true
+        validFormat = isPng || isJpeg;
+        //Ensuite on vérifie la taille de l'image
+        //On commence par récupéré la taille de l'image avec .size
+        const photoSize = selectedPhoto.size;
+        //On indique ensuite la taille maximum accepté pour une image
+        //Ici on veut 4mo maximum, on fait donc le calcul 4 x 1024 x 1024 = 4 194 304 octets
+        const maxPhotoSize = 4 * 1024 * 1024;
+        //On vérifie si la taille est bien inférieur ou égal a celle maximum autorisée
+        validSize = photoSize <= maxPhotoSize;
+        //Enfin on vérifie que la taille et le format de l'image sont correct
+        validPhoto = validFormat && validSize;
+    }
+    return {
+        validPhoto: validPhoto,
+        validFormat: validFormat,
+        validSize: validSize,
+    }
 }
 
 //Je créer une fonction pour m'assurer que le formulaire de la modale est bien remplis pour passer le bouton Valider fonctionnel.
@@ -71,29 +118,32 @@ function checkModalForm () {
     const categoryFilled = modalCategorySelect.value !== "";
     //Je vérifie le format de la photo avec .files
     const selectedPhoto = modalPhotoInput.files[0];
-    //on démarre avec ValidPhoto qui vaut false, puis si la condition If est correct, ValidPhoto passe en true
-    let validPhoto = false;
-    if (selectedPhoto) {
-        //Si la photo est au format png
-        const isPng = selectedPhoto.type === "image/png";
-        //Si la photo est au format jpeg
-        const isJpeg = selectedPhoto.type === "image/jpeg";
-        //Si l'image est au format png OU jpeg alors c'est true
-        const validFormat = isPng || isJpeg;
-        //Ensuite on vérifie la taille de l'image
-        //On commence par récupéré la taille de l'image avec .size
-        const photoSize = selectedPhoto.size;
-        //On indique ensuite la taille maximum accepté pour une image
-        //Ici on veut 4mo maximum, on fait donc le calcul 4 x 1024 x 1024 = 4 194 304 octets
-        const maxPhotoSize = 4 * 1024 * 1024;
-        //On vérifie si la taille est bien inférieur ou égal a celle maximum autorisée
-        const validSize = photoSize <= maxPhotoSize;
-        //Enfin on vérifie que la taille et le format de l'image sont correct
-        validPhoto = validFormat && validSize;
-    }
+    const photoValidity = checkPhotoValidity(selectedPhoto);
+    const validPhoto = photoValidity.validPhoto;
+    const validFormat = photoValidity.validFormat;
+    const validSize = photoValidity.validSize;
     //On vérifie si les 3 conditions sont valide avec &&
     const formFilled = titleFilled && categoryFilled && validPhoto;
     modalAddBtn.disabled = !formFilled;
+    if (formFilled) {
+        hideMessageError()
+    } 
+    else if (validFormat !== true && selectedPhoto !== undefined) {
+        displayModalError("Veuillez choisir un format valide")
+    }
+    else if (validSize !== true && selectedPhoto !== undefined) {
+        displayModalError("Veuillez séléctionné une image ne dépassant pas 4mo")
+    }
+    else if (titleFilled !== true) {
+        displayModalError("Veuillez renseigner un titre")
+    }
+    else if (categoryFilled !== true) {
+        displayModalError("Veuillez ajouter une catégorie")
+    }
+    else if (selectedPhoto === undefined) {
+        displayModalError("Veuillez séléctionner une photo")
+    }
+    
 }
 
 //J'ajoute des écouteurs sur tout les éléments du form : titre, catégorie, photo
@@ -361,7 +411,7 @@ logLink.addEventListener("click", function () {
 //Je récupère le token de la session dans une variable let au cas où un autre utilisateur se connecte on peut affecter un autre token a cette variable.
 let authToken = sessionStorage.getItem("token");
 //Je créer une constante pour préparé la valeur de l'en-tête HTTP Authorization
-//Cela permet de vérifié que l'utilisateur est autorisé a supprimé un projet
+//Cela permet de vérifié que l'utilisateur est autorisé a supprimé ou ajouter un projet
 //Bearer indique le type d'authentification trouvable sur Swagger en cliquant sur "Authorize".
 const authorizationValue = `Bearer ${authToken}`;
 //On prépare le headers pour les options de l'objet a transmettre a fetch()
@@ -393,3 +443,63 @@ async function deleteWork(id, modalFigure) {
         displayProjects(projects);
     }
 }
+
+//Ajouter un nouveau projet depuis la modale d'ajout
+async function addWork () {
+    //FormData sert pour notre projet a transmettre du texte et un fichier image
+    const formData = new FormData();
+    const selectedPhoto = modalPhotoInput;
+    //on utilise .append("nom", valeur) ex : formData.append("prénom", "Sophie")
+    formData.append("image", selectedPhoto.files[0]);
+    const selectedTitle = modalTitleInput.value.trim();
+    formData.append("title", selectedTitle);
+    const selectedCategory = modalCategorySelect.value
+    formData.append("category", selectedCategory);
+    //Je prépare l'url et les options pour fetch POST
+    const newWorkUrl = "http://localhost:5678/api/works"
+    const postHeaders = {
+        authorization: authorizationValue
+    }
+    const postOptions = {
+        method: "POST",
+        headers: postHeaders,
+        body: formData
+    }
+    //je créer un try/catch au cas ou le backend est arreter ou bien une panne de réseau ou encore une erreur lors de la lecture du json.
+    try {
+        const response = await fetch(newWorkUrl, postOptions);
+
+        //Je créer un if avec comme condition response.ok pour savoir si le serveur a accepter ou refusé notre requête.
+        if (response.ok) {
+            //Si .ok de response vaut true alors on récupére les infos du projet dans une nouvelle constante.
+            const newWork = await response.json();
+            console.log("Le projet a était ajouté avec succés")
+            console.log(newWork);
+            //J'utilise .push() pour push le nouveau projet a la fin de mon tableau contenant les projets existant.
+            projects.push(newWork);
+            //Je vide la gallery
+            gallery.innerHTML = "";
+            //Et je la re remplit avec le nouveau tableau contenant le nouveau projet
+            displayProjects(projects);
+            // Actualiser la galerie de la modale avec le nouveau tableau.
+            // La fonction vide déjà elle-même la galerie avant de la reconstruire.
+            displayModalProjects(projects);
+            resetModalForm();
+            modaleOverlay.style.display = "none";
+        } else {
+            //sinon si .ok de response vaut false, afficher ce message d'erreur
+            displayModalError("Impossible d'ajouter le projet. Veuillez réessayer.")
+        }
+    } catch (error) {
+        displayModalError("Une erreur de communication avec le serveur est survenue.")
+        //console.error, permet d'afficher des infos concernant une erreur
+        //on lui transmet notre error en argument que le catch a intercepté.
+        //cela permet d'avoir une informations plus précise pour le dév concernant l'erreur intércepté.
+        console.error(error)
+    }
+}   
+
+modalAddForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    addWork()
+})
